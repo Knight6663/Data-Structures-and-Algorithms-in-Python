@@ -3,19 +3,19 @@
 作者:吕瑞承
 日期:2021年04月25日18时
 """
-import LinkedBinaryTree
+from LinkedBinaryTree import LinkedBinaryTree
 
 
 class ExpressionTree(LinkedBinaryTree):
     """表达式树"""
 
     def __init__(self, token, left=None, right=None):
-        super().__init__()
+        super().__init__()            # 父类继承
         if not isinstance(token, str):
             raise TypeError('Token必须是一个字符')
         self._add_root(token)
         if left is not None:
-            if token not in '+-*x/':          # 将*和x都视为乘法
+            if token not in '+-*x/':  # 将*和x都视为乘法
                 raise ValueError('token必须合法')
             self._attach(self.root(), left, right)
 
@@ -38,7 +38,41 @@ class ExpressionTree(LinkedBinaryTree):
 
     def evaluate(self):
         """返回表达式的数字结果"""
-        return
+        return self._evaluate_recur(self.root())
 
     def _evaluate_recur(self, p):
-        """"""
+        """返回p处子树的数字结果"""
+        if self.is_leaf(p):
+            return float(p.element())
+        else:
+            op = p.element()
+            left_val = self._evaluate_recur(self.left(p))
+            right_val = self._evaluate_recur(self.right(p))
+            if op == '+':
+                return left_val + right_val
+            if op == '-':
+                return left_val - right_val
+            if op == '/':
+                return left_val / right_val
+            else:
+                return left_val * right_val
+
+
+def build_experssion_tree(tokens):
+    S = []
+    for t in tokens:
+        if t in '+-/*x':
+            S.append(t)
+        elif t not in '()':
+            S.append(ExpressionTree(t))
+        elif t == ')':
+            right = S.pop()
+            op = S.pop()
+            left = S.pop()
+            S.append(ExpressionTree(op, left, right))
+    return S.pop()
+
+
+if __name__ == '__main__':
+    EX = build_experssion_tree('(((1+2)*3)-4)')     # answer = 5.0
+    print(EX.evaluate())
