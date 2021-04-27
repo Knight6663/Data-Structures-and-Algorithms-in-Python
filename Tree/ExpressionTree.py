@@ -59,6 +59,7 @@ class ExpressionTree(LinkedBinaryTree):
 
 
 def build_experssion_tree(tokens):
+    """建立表达式树，tokens为字符串"""
     S = []
     for t in tokens:
         if t in '+-/*x':
@@ -74,5 +75,5 @@ def build_experssion_tree(tokens):
 
 
 if __name__ == '__main__':
-    EX = build_experssion_tree('(((1+2)*3)-4)')     # answer = 5.0
+    EX = build_experssion_tree('(((3+1)*6)/((9-5)+2))')     # 建立表达式树
     print(EX.evaluate())

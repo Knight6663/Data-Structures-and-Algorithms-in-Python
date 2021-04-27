@@ -1,1 +1,1 @@
-Test
+This is the Data Structures and Algorithms in Python for self-study
