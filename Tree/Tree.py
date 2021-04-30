@@ -4,7 +4,7 @@
 日期:2021年04月20日17时
 """
 
-
+from LinkedList.linkedquene import LinkedQuene
 
 class Tree:
     """一个表示树的抽象类"""
@@ -112,3 +112,13 @@ class Tree:
         """生成树中元素的迭代"""
         for p in self.pre_position():
             yield p.element()
+
+    def breadthfirst(self):
+        if not self.is_empty():
+            fringe = LinkedQuene()
+            fringe.enquene(self.root())
+            while not fringe.is_empty():
+                p = fringe.dequene()
+                yield p
+                for c in self.children(p):
+                    fringe.enquene(c)
