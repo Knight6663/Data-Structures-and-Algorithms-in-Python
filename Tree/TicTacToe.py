@@ -124,9 +124,7 @@ def move(board):
     return random.choice(cmoves)
 
 
-# 游戏开始
-if __name__ == '__main__':
-
+def main():
     # 初始化下一步，当输入有误时默认玩家先
     next_move = HUMAN
 
@@ -164,3 +162,8 @@ if __name__ == '__main__':
     # 输出结果
     PRINT(board)
     print(RESULT[winner(board)])
+
+
+# 游戏开始
+if __name__ == '__main__':
+    main()
