@@ -254,3 +254,11 @@ if __name__ == '__main__':
     preorder_indent(t, t.root(), 0)
     print(20 * '*')
     parenthesize(t, p_root)
+    # for i in t.breadthfirst().__iter__():
+    #     print(i.element())
+    print()
+    for i in t.preorder():
+        print(i.element())
+    print()
+    for i in t.postorder():
+        print(i.element())
