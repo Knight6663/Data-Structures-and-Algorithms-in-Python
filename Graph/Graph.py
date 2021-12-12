@@ -1,7 +1,7 @@
 # -*- coding:UTF-8 -*-
 """
 作者:吕瑞承
-日期:2021年12月10日13时
+日期:2021年11月10日13时
 """
 
 
@@ -21,9 +21,6 @@ class Graph:
             """返回这个顶点上的元素"""
             return self._element
 
-        def __eq__(self, other):
-            return self._element == other.element()
-
         def __hash__(self):
             return hash(id(self))
 
@@ -38,7 +35,7 @@ class Graph:
             self._destination = destination
             self._element = element
 
-        def endpoints(self) -> tuple:
+        def points(self) -> tuple:
             """
             对于这条边的起点和终点，返回一个形如(origin,destination)的元组。
             对于无向图而言，方向是任意的。
@@ -65,11 +62,10 @@ class Graph:
             """返回这条边的终点"""
             return self._destination
 
-        def __eq__(self, other):
-            return self._element == other.element()
-
         def __hash__(self):
             return hash((self._origin, self._destination))
+
+    __slots__ = '_outgoing', '_incoming'
 
     def __init__(self, directed=False):
         """
@@ -86,7 +82,7 @@ class Graph:
         """
         return self._incoming is not self._outgoing
 
-    def vertex_count(self):
+    def vertex_count(self) -> int:
         """
 
         :return: 图中顶点的总数
@@ -100,7 +96,7 @@ class Graph:
         """
         return self._outgoing.keys()
 
-    def edge_count(self):
+    def edge_count(self) -> int:
         """
 
         :return: 图中边的总数
@@ -109,7 +105,7 @@ class Graph:
         # 有向图会将一条边重复计算一次，因此需要整除一次2
         return edge_total if self.is_directed() else edge_total // 2
 
-    def edge(self):
+    def edge(self) -> set:
         """
 
         :return: 图中所有边的一个集合
@@ -128,7 +124,7 @@ class Graph:
         """
         return self._outgoing[u].get(v)
 
-    def degree(self, v, out=True):
+    def degree(self, v, out=True) -> int:
         """
         对于无向图而言，返回边入射到顶点v的数目。
         对于有向图而言，返回顶点v的出/入度，默认返回出度。
@@ -139,7 +135,7 @@ class Graph:
         ch = self._outgoing if out else self._incoming
         return len(ch[v])
 
-    def incident_edges(self, v, out=True):
+    def incident_edges(self, v, out=True) -> Edge:
         """
         对于无向图而言，返回边入射到顶点v的迭代对象
         对于有向图而言，返回顶点v上的输出（或输入）边，默认输出输出边
@@ -151,11 +147,11 @@ class Graph:
         for edge in ch[v].values():
             yield edge
 
-    def insert_vertex(self, element=None):
+    def insert_vertex(self, element=None) -> Vertex:
         """
         插入并返回一个包含元素的新顶点
         :param element:顶点内内容，默认为空
-        :return:顶点
+        :return:新生成的顶点
         """
         v = self.Vertex(element)
         self._outgoing[v] = {}
@@ -163,27 +159,27 @@ class Graph:
             self._incoming[v] = {}
         return v
 
-    def insert_edge(self, u, v, element=None):
+    def insert_edge(self, u, v, element=None) -> Edge:
         """
         插入并返回一个带有元素的边
         :param u: 起点
         :param v: 终点
         :param element:边内元素，默认为空
-        :return: 边
+        :return: 新生成的边
         """
         e = self.Edge(u, v, element)
         self._outgoing[u][v] = e
         self._incoming[v][u] = e
         return e
 
-    def kruskal(self):
+    def kruskal(self) -> list:
         """
         最小生成树Kruskal
-        :return:
+        :return:Kruskal最小生成树列表
         """
         edges = list(self.edge())
         edges.sort(key=lambda edge: edge.element())
-        connect = {}  # 避免环的产生
+        connect = {}  # 避免环的产生，并查集
         res = []
         vertices = self.vertices()
         for v in vertices:
@@ -200,10 +196,10 @@ class Graph:
                         connect[key] = a
         return res
 
-    def prim(self):
+    def prim(self) -> list:
         """
         最小生成树prim
-        :return:
+        :return:prim最小生成树列表
         """
         edges = list(self.edge())
         edges.sort(key=lambda edge: edge.element())
@@ -228,13 +224,12 @@ class Graph:
         return res
 
 
-def DFS(g, u, visited):
+def DFS(g, u, visited) -> None:
     """
     深度优先搜索DFS
     :param g: 图
     :param u: 初始顶点
     :param visited:遍历过的各顶点的路径
-    :return:
     """
     for x in g.incident_edges(u):
         v = x.opposite(u)
@@ -243,36 +238,12 @@ def DFS(g, u, visited):
             DFS(g, v, visited)
 
 
-def construct_path(g, u, v, visited):
-    """
-    根据深度优先搜索DFS或广度优先搜索BFS得到顶点u到顶点v是否可达，根据DFS遍历期间的记录可以对路径进行重建。
-    :param g: 图
-    :param u: 起点
-    :param v: 终点
-    :param visited:DFS/BFS之后各顶点的路径
-    :return: 起点u到终点v的路径
-    """
-    path = []
-    DFS(g, u, visited)
-    if v in visited:
-        path.append(v)
-        walk = v
-        while walk is not u:
-            e = visited[walk]
-            parent = e.opposite(walk)
-            path.append(parent)
-            walk = parent
-        path.reverse()
-    return path
-
-
-def BFS(g, x, visited):
+def BFS(g, x, visited) -> None:
     """
     广度优先搜索BFS
     :param g: 图
     :param x: 顶点
     :param visited: 遍历过的各顶点的路径
-    :return:
     """
     level = [x]
     while len(level) > 0:
@@ -284,6 +255,28 @@ def BFS(g, x, visited):
                     visited[v] = e
                     next_level.append(v)
         level = next_level
+
+
+def construct_path(g, u, v, visited) -> list:
+    """
+    根据深度优先搜索DFS或广度优先搜索BFS得到顶点u到顶点v是否可达，根据DFS遍历期间的记录可以对路径进行重建。
+    :param g: 图
+    :param u: 起点
+    :param v: 终点
+    :param visited:DFS/BFS之后各顶点的路径
+    :return: 起点u到终点v的路径
+    """
+    path = []
+    if v in visited:
+        path.append(v)
+        walk = v
+        while walk is not u:
+            e = visited[walk]
+            parent = e.opposite(walk)
+            path.append(parent)
+            walk = parent
+        path.reverse()
+    return path
 
 
 def topological_sort(g) -> list:
@@ -312,73 +305,99 @@ def topological_sort(g) -> list:
 
 
 if __name__ == '__main__':
-    # myGraph = Graph(directed=True)
+    dGraph = Graph(directed=True)
+
+    A = dGraph.insert_vertex('A')
+    B = dGraph.insert_vertex('B')
+    C = dGraph.insert_vertex('C')
+    D = dGraph.insert_vertex('D')
+    E = dGraph.insert_vertex('E')
+    F = dGraph.insert_vertex('F')
+
+    E1 = dGraph.insert_edge(A, B, 'Eab')
+    E2 = dGraph.insert_edge(A, C, 'Eac')
+    E3 = dGraph.insert_edge(C, D, 'Ecd')
+    E4 = dGraph.insert_edge(D, E, 'Ede')
+    # E5 = dGraph.insert_edge(E, A, 'Eea')
+    E6 = dGraph.insert_edge(B, D, 'Ebd')
+    E7 = dGraph.insert_edge(D, F, 'Edf')
+    # E8 = dGraph.insert_edge(F, B, 'Efb')
+
+    visited = {}
+    print('*' * 20)
+    print('深度优先搜索：')
+    DFS(dGraph, A, visited)
+    for k, v in visited.items():
+        print(str(k.element()) + ':' + str(v.element()))
+
+    print('*' * 20)
+    print('广度优先搜索：')
+    BFS(dGraph, A, visited)
+    for k, v in visited.items():
+        print(str(k.element()) + ':' + str(v.element()))
+
+    print('*' * 20)
+    print('两点路径：')
+    path = construct_path(dGraph, B, C, visited)
+    for i in path:
+        print(i.element(), end=' ')
+
+    print('*' * 20)
+    print('拓扑排序：')
+    for v in topological_sort(dGraph):
+        print(v.element())
+
+    # -------无向图部分------------------------------------------------------------------------------
+    # 建立无向图
+    # print('-' * 50)
+    # print('无向图部分:')
+    # udGraph = Graph()
     #
-    # A = myGraph.insert_vertex('A')
-    # B = myGraph.insert_vertex('B')
-    # C = myGraph.insert_vertex('C')
-    # D = myGraph.insert_vertex('D')
-    # E = myGraph.insert_vertex('E')
-    # F = myGraph.insert_vertex('F')
+    # A = udGraph.insert_vertex('A')
+    # B = udGraph.insert_vertex('B')
+    # C = udGraph.insert_vertex('C')
+    # D = udGraph.insert_vertex('D')
+    # E = udGraph.insert_vertex('E')
+    # F = udGraph.insert_vertex('F')
+    # G = udGraph.insert_vertex('G')
     #
-    # E1 = myGraph.insert_edge(A, B, 'Eab')
-    # E2 = myGraph.insert_edge(A, C, 'Eac')
-    # E3 = myGraph.insert_edge(C, D, 'Ecd')
-    # E4 = myGraph.insert_edge(D, E, 'Ede')
-    # E5 = myGraph.insert_edge(E, A, 'Eea')
-    # E6 = myGraph.insert_edge(B, D, 'Ebd')
-    # E7 = myGraph.insert_edge(D, F, 'Edf')
-    # E8 = myGraph.insert_edge(F, B, 'Efb')
+    # E1 = udGraph.insert_edge(A, B, 5)
+    # E2 = udGraph.insert_edge(A, C, 11)
+    # E3 = udGraph.insert_edge(A, D, 6)
+    # E4 = udGraph.insert_edge(B, D, 3)
+    # E5 = udGraph.insert_edge(B, G, 7)
+    # E6 = udGraph.insert_edge(B, E, 9)
+    # E7 = udGraph.insert_edge(C, D, 7)
+    # E8 = udGraph.insert_edge(C, F, 6)
+    # E9 = udGraph.insert_edge(F, G, 8)
+    # E10 = udGraph.insert_edge(D, G, 20)
+    # E11 = udGraph.insert_edge(G, E, 8)
 
-    # visited = {}
-    # DFS(myGraph, A, visited)
-    # for k, v in visited.items():
-    #     print(str(k.element()) + ':' + str(v.element()))
+    # 求某两点是否相邻
+    # print('-' * 30)
+    # print('求两点是否相邻:')
+    # print(udGraph.get_edge(A, C))
+    # print(udGraph.get_edge(A, G))
 
-    # path = construct_path(myGraph, B, C, visited)
-    # for i in path:
-    #     print(i.element(), end=' ')
+    # 求某顶点的度
+    # print('-' * 30)
+    # print('求顶点的度:')
+    # print(udGraph.degree(D))
 
-    # print(myGraph.edge_count())
+    # kruskal求最小生成树
+    # print('-' * 30)
+    # print('kruskal求最小生成树:')
+    # kruskal = udGraph.kruskal()
+    # for i in kruskal:
+    #     print(i[0][0].element(), end=' ')
+    #     print(i[0][1].element(), end=' ')
+    #     print(i[1])
 
-    # print()
-
-    # for v in topological_sort(myGraph):
-    #     print(v.element())
-
-    # ---------------------------------------------------------------------------------------------------------------
-    udGraph = Graph()
-
-    A = udGraph.insert_vertex('A')
-    B = udGraph.insert_vertex('B')
-    C = udGraph.insert_vertex('C')
-    D = udGraph.insert_vertex('D')
-    E = udGraph.insert_vertex('E')
-    F = udGraph.insert_vertex('F')
-    G = udGraph.insert_vertex('G')
-
-    E1 = udGraph.insert_edge(A, B, 5)
-    E2 = udGraph.insert_edge(A, C, 11)
-    E3 = udGraph.insert_edge(A, D, 6)
-    E4 = udGraph.insert_edge(B, D, 3)
-    E5 = udGraph.insert_edge(B, G, 7)
-    E6 = udGraph.insert_edge(B, E, 9)
-    E7 = udGraph.insert_edge(C, D, 7)
-    E8 = udGraph.insert_edge(C, F, 6)
-    E9 = udGraph.insert_edge(F, G, 8)
-    E10 = udGraph.insert_edge(D, G, 20)
-    E11 = udGraph.insert_edge(G, E, 8)
-
-    kruskal = udGraph.kruskal()
-    for i in kruskal:
-        print(i[0][0].element(), end=' ')
-        print(i[0][1].element(), end=' ')
-        print(i[1])
-
-    print('-' * 20)
-
-    prim = udGraph.prim()
-    for i in prim:
-        print(i[0][0].element(), end=' ')
-        print(i[0][1].element(), end=' ')
-        print(i[1])
+    # prim求最小生成树
+    # print('-' * 30)
+    # print('prim求最小生成树:')
+    # prim = udGraph.prim()
+    # for i in prim:
+    #     print(i[0][0].element(), end=' ')
+    #     print(i[0][1].element(), end=' ')
+    #     print(i[1])
